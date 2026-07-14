@@ -101,8 +101,23 @@ downloadBtn.addEventListener('click', async () => {
   progressText.textContent = 'Starting download...';
   statusMessage.classList.add('hidden');
 
+  // Elapsed time counter — reassures user during the metadata-fetch phase
+  let elapsedSec = 0;
+  const elapsedTimer = setInterval(() => {
+    elapsedSec++;
+    const m = Math.floor(elapsedSec / 60);
+    const s = elapsedSec % 60;
+    const t = m > 0 ? `${m}m ${s}s` : `${s}s`;
+    if (progressFill.classList.contains('progress-fill--waiting')) {
+      progressText.textContent = `Starting download... (${t})`;
+    }
+  }, 1000);
+
+  const stopTimer = () => clearInterval(elapsedTimer);
+
   // Listen for real-time progress from yt-dlp
   window.electronAPI.onDownloadProgress((percent) => {
+    stopTimer();
     progressFill.classList.remove('progress-fill--waiting');
     progressFill.style.width = `${percent}%`;
     progressText.textContent = `${Math.round(percent)}%`;
@@ -117,6 +132,7 @@ downloadBtn.addEventListener('click', async () => {
     });
 
     if (result.success) {
+      stopTimer();
       window.electronAPI.removeDownloadProgressListeners();
       progressFill.classList.remove('progress-fill--waiting');
       progressFill.style.width = '100%';
@@ -135,11 +151,13 @@ downloadBtn.addEventListener('click', async () => {
         downloadBtn.disabled = false;
       }, 2000);
     } else {
+      stopTimer();
       window.electronAPI.removeDownloadProgressListeners();
       showStatus(`Error: ${result.error}`, 'error');
       downloadBtn.disabled = false;
     }
   } catch (error) {
+    stopTimer();
     window.electronAPI.removeDownloadProgressListeners();
     showStatus(`Download failed: ${error.message}`, 'error');
     downloadBtn.disabled = false;

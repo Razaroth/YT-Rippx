@@ -178,50 +178,47 @@ async function downloadYouTube(url, format, quality, outputPath, onProgress) {
       ));
     }
 
-    const outputTemplate = `${defaultPath.replace(/\\/g, '/')}/%(title)s.%(ext)s`;
+    const outputTemplate = path.join(defaultPath, '%(title)s.%(ext)s');
 
     // Simple, maximally-compatible format strings.
-    // "best" always resolves to something; prefer mp4 but don't fail if unavailable.
     const videoFormat = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best';
     const audioFormat = 'bestaudio[ext=m4a]/bestaudio/best';
 
-    const ffmpegArgs = ffmpegPath ? ['--ffmpeg-location', `"${ffmpegPath}"`] : [];
-    const postprocessArgs = format === 'mp3' ? ['-x', '--audio-format', 'mp3'] : [];
-
-    const argParts = [
-      `"${url}"`,
+    // Build args as an array — spawn handles quoting automatically
+    const ytDlpBin = ytDlp.replace(/^"|"$/g, ''); // strip surrounding quotes
+    const args = [
+      url,
       '-f', format === 'mp3' ? audioFormat : videoFormat,
       '--no-warnings',
-      '-o', `"${outputTemplate}"`,
-      ...ffmpegArgs,
-      ...postprocessArgs,
+      '--newline',           // force progress on new lines for reliable stream parsing
+      '-o', outputTemplate,
     ];
+    if (ffmpegPath) {
+      const ffmpegBin = ffmpegPath.replace(/^"|"$/g, '');
+      args.push('--ffmpeg-location', ffmpegBin);
+    }
+    if (format === 'mp3') args.push('-x', '--audio-format', 'mp3');
 
-    const command = `${ytDlp} ${argParts.join(' ')}`;
+    const child = spawn(ytDlpBin, args, { stdio: ['ignore', 'ignore', 'pipe'] });
+    let stderrBuf = '';
 
-    const child = exec(command, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
-      if (error) {
-        reject(new Error(`Download failed: ${extractErrors(stderr) || error.message}`));
-      } else {
-        resolve({
-          success: true,
-          filename: 'Downloaded successfully',
-          path: defaultPath,
-        });
-      }
-    });
-
-    // Stream yt-dlp progress: parses "[download]  45.2%" lines from stderr
-    child.stderr?.on('data', (data) => {
-      if (!onProgress) return;
+    child.stderr.on('data', (data) => {
       const str = data.toString();
+      stderrBuf += str;
+      if (!onProgress) return;
       const match = str.match(/(\d+\.?\d*)%/);
-      if (match) {
-        onProgress(parseFloat(match[1]));
+      if (match) onProgress(parseFloat(match[1]));
+    });
+
+    child.on('error', (err) => reject(new Error(`Failed to start yt-dlp: ${err.message}`)));
+
+    child.on('close', (code) => {
+      if (code === 0) {
+        resolve({ success: true, filename: 'Downloaded successfully', path: defaultPath });
+      } else {
+        reject(new Error(`Download failed: ${extractErrors(stderrBuf) || `yt-dlp exited with code ${code}`}`));
       }
     });
-  });
-}
 
 // Get video info and available formats
 async function getVideoInfo(url) {
