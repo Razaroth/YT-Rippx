@@ -143,8 +143,18 @@ async function resolveFFmpeg() {
   return _ffmpegPath;
 }
 
-// Extra yt-dlp args to avoid JS runtime requirement (use mobile/web player clients)
-const PLAYER_CLIENT_ARGS = ['--extractor-args', 'youtube:player_client=ios,mweb'];
+// tv_embedded client works without PO tokens and without a JS runtime
+const PLAYER_CLIENT_ARGS = ['--extractor-args', 'youtube:player_client=tv_embedded,web_embedded'];
+
+// Extract only ERROR lines from yt-dlp stderr (ignore WARNING / INFO noise)
+function extractErrors(stderr) {
+  if (!stderr) return '';
+  const errorLines = stderr
+    .split(/\r?\n/)
+    .filter(l => /^\s*ERROR:/i.test(l))
+    .join('\n');
+  return errorLines || stderr.trim(); // fallback to full stderr if no ERROR lines found
+}
 
 // Download YouTube video/audio
 async function downloadYouTube(url, format, quality, outputPath) {
@@ -193,7 +203,7 @@ async function downloadYouTube(url, format, quality, outputPath) {
 
     const process = exec(command, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
-        reject(new Error(`Download failed: ${stderr || error.message}`));
+        reject(new Error(`Download failed: ${extractErrors(stderr) || error.message}`));
       } else {
         resolve({
           success: true,
@@ -216,7 +226,7 @@ async function getVideoInfo(url) {
   try {
     const ytDlp = await resolveYtDlp();
     const extraArgs = [...PLAYER_CLIENT_ARGS].join(' ');
-    const command = `${ytDlp} "${url}" --dump-json --quiet --skip-download ${extraArgs}`;
+    const command = `${ytDlp} "${url}" --dump-json --quiet --no-warnings --skip-download ${extraArgs}`;
     const { stdout, stderr } = await execPromise(command, { 
       maxBuffer: 10 * 1024 * 1024,
       timeout: 30000 
