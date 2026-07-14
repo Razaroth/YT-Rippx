@@ -1,0 +1,56 @@
+{
+  "name": "ytrippx",
+  "version": "1.0.0",
+  "description": "A YouTube downloader for MP3 and MP4 with desktop and CLI interfaces",
+  "main": "src/main/index.js",
+  "homepage": "./",
+  "type": "commonjs",
+  "scripts": {
+    "start": "electron .",
+    "dev": "concurrently \"electron .\" \"npm run watch\"",
+    "watch": "tsc --watch",
+    "build": "tsc",
+    "cli": "node src/cli/ytripper-cli.js",
+    "electron-dev": "cross-env NODE_ENV=development electron .",
+    "electron-build": "electron-builder",
+    "package": "npm run build && electron-builder --publish never",
+    "make": "electron-builder --win --publish never"
+  },
+  "dependencies": {
+    "axios": "^1.4.0",
+    "dotenv": "^16.3.1",
+    "electron-is-dev": "^3.0.1",
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "yargs": "^17.7.2",
+    "yt-dlp-core": "^2.4.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.4.2",
+    "concurrently": "^8.2.0",
+    "cross-env": "^7.0.3",
+    "electron": "^25.0.0",
+    "electron-builder": "^24.4.0",
+    "typescript": "^5.1.6"
+  },
+  "build": {
+    "appId": "com.ytrippx.app",
+    "productName": "YTRippx",
+    "files": [
+      "src/**/*",
+      "node_modules/**/*",
+      "public/**/*"
+    ],
+    "win": {
+      "target": [
+        "nsis",
+        "portable"
+      ],
+      "icon": "assets/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

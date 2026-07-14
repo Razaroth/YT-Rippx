@@ -1,0 +1,4 @@
+[Output too large (81KB). Full output saved to: c:\Users\Razar\AppData\Roaming\Code\copilot-terminal-output\copilot-terminal-output-0a421e43-140d-40e0-a7f0-cb92f5278abc.txt]
+[Use readFile or grep to examine the full output.]
+
+PS C:\Users\Razar\Desktop\YTRippx>                                              02A5A9CCE78197BB286A5AF8C0CD621&key=yt8&kind=asr&lang=en&fmt=ttml&tlang=tt", "name": "Tatar", "impersonate": true, "__yt_dlp_client": "android_vr"}, {"ext": "srt", "url": "https://www.youtube.co
