@@ -143,6 +143,40 @@ async function resolveFFmpeg() {
   return _ffmpegPath;
 }
 
+// Resolve aria2c — fastest external downloader (splits each fragment into 16 parallel range-requests)
+let _aria2cPath = null;
+async function resolveAria2c() {
+  if (_aria2cPath !== null) return _aria2cPath;
+
+  try {
+    const cmd = process.platform === 'win32' ? 'where aria2c' : 'which aria2c';
+    const { stdout } = await execPromise(cmd);
+    const found = stdout.trim().split(/\r?\n/)[0];
+    if (found && fs.existsSync(found)) { _aria2cPath = found; return _aria2cPath; }
+  } catch (_) {}
+
+  if (process.platform === 'win32') {
+    const userProfile = process.env.USERPROFILE || os.homedir();
+    const candidates = [
+      path.join(userProfile, 'scoop', 'shims', 'aria2c.exe'),
+      path.join(userProfile, 'scoop', 'apps', 'aria2', 'current', 'aria2c.exe'),
+      'C:\\ProgramData\\chocolatey\\bin\\aria2c.exe',
+      path.join(userProfile, 'bin', 'aria2c.exe'),
+      'C:\\aria2\\aria2c.exe',
+    ];
+    for (const c of candidates) {
+      if (fs.existsSync(c)) { _aria2cPath = c; return _aria2cPath; }
+    }
+  } else {
+    for (const c of ['/usr/local/bin/aria2c', '/usr/bin/aria2c', path.join(os.homedir(), '.local', 'bin', 'aria2c')]) {
+      if (fs.existsSync(c)) { _aria2cPath = c; return _aria2cPath; }
+    }
+  }
+
+  _aria2cPath = ''; // not found
+  return _aria2cPath;
+}
+
 // Extract only ERROR lines from yt-dlp stderr (ignore WARNING / INFO noise)
 function extractErrors(stderr) {
   if (!stderr) return '';
@@ -186,16 +220,35 @@ async function downloadYouTube(url, format, quality, outputPath, onProgress, thr
 
     // Build args as an array — spawn handles quoting automatically
     const ytDlpBin = ytDlp.replace(/^"|"$/g, ''); // strip surrounding quotes
+    const aria2cPath = await resolveAria2c();
+
     const args = [
       url,
       '-f', format === 'mp3' ? audioFormat : videoFormat,
       '--no-warnings',
-      '--newline',           // force progress on new lines for reliable stream parsing
-      '--concurrent-fragments', String(Math.max(1, parseInt(threads) || 4)),
+      '--newline',
+    ];
+
+    if (aria2cPath) {
+      // aria2c: 16 parallel HTTP range-requests per fragment — fastest possible
+      const aria2cBin = aria2cPath.replace(/^"|"$/g, '');
+      args.push(
+        '--downloader', aria2cBin,
+        '--downloader-args', 'aria2c:-x 16 -s 16 -k 1M --min-split-size=1M --quiet',
+      );
+    } else {
+      // No aria2c: use concurrent fragments + chunk-size trick to beat YouTube throttle
+      args.push(
+        '--concurrent-fragments', String(Math.max(1, parseInt(threads) || 4)),
+        '--http-chunk-size', '10M',
+      );
+    }
+
+    args.push(
       '--buffer-size',      '16K',
       '--fragment-retries', '10',
       '-o', outputTemplate,
-    ];
+    );
     if (ffmpegPath) {
       const ffmpegBin = ffmpegPath.replace(/^"|"$/g, '');
       args.push('--ffmpeg-location', ffmpegBin);
