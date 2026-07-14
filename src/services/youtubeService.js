@@ -154,7 +154,7 @@ function extractErrors(stderr) {
 }
 
 // Download YouTube video/audio
-async function downloadYouTube(url, format, quality, outputPath, onProgress) {
+async function downloadYouTube(url, format, quality, outputPath, onProgress, threads = 4) {
   return new Promise(async (resolve, reject) => {
     let ytDlp;
     try { ytDlp = await resolveYtDlp(); } catch (e) { return reject(e); }
@@ -191,6 +191,9 @@ async function downloadYouTube(url, format, quality, outputPath, onProgress) {
       '-f', format === 'mp3' ? audioFormat : videoFormat,
       '--no-warnings',
       '--newline',           // force progress on new lines for reliable stream parsing
+      '--concurrent-fragments', String(Math.max(1, parseInt(threads) || 4)),
+      '--buffer-size',      '16K',
+      '--fragment-retries', '10',
       '-o', outputTemplate,
     ];
     if (ffmpegPath) {

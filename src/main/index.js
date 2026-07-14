@@ -51,12 +51,12 @@ app.on('activate', () => {
 });
 
 // IPC Handlers
-ipcMain.handle('download', async (event, { url, format, quality, outputPath }) => {
+ipcMain.handle('download', async (event, { url, format, quality, outputPath, threads }) => {
   try {
     const onProgress = (percent) => {
       try { event.sender.send('download-progress', percent); } catch (_) {}
     };
-    const result = await downloadYouTube(url, format, quality, outputPath, onProgress);
+    const result = await downloadYouTube(url, format, quality, outputPath, onProgress, threads);
     await addToHistory({
       url,
       format,

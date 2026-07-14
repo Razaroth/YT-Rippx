@@ -93,6 +93,7 @@ downloadBtn.addEventListener('click', async () => {
   const format = formatSelect.value;
   const quality = qualitySelect.value;
   const path = outputPath.value;
+  const threads = document.getElementById('threadsSelect').value;
 
   downloadBtn.disabled = true;
   progressContainer.classList.remove('hidden');
@@ -129,6 +130,7 @@ downloadBtn.addEventListener('click', async () => {
       format,
       quality,
       outputPath: path,
+      threads,
     });
 
     if (result.success) {
