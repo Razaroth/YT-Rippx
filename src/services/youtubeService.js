@@ -219,6 +219,8 @@ async function downloadYouTube(url, format, quality, outputPath, onProgress) {
         reject(new Error(`Download failed: ${extractErrors(stderrBuf) || `yt-dlp exited with code ${code}`}`));
       }
     });
+  });
+}
 
 // Get video info and available formats
 async function getVideoInfo(url) {
