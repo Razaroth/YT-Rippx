@@ -646,3 +646,288 @@ main {
     padding: 20px 16px;
   }
 }
+
+/* ═══════════════════════════════════════════════════════
+   FRUTIGER AERO — ENHANCED DEPTH LAYER
+   ═══════════════════════════════════════════════════════ */
+
+/* ── KEYFRAMES ──────────────────────────────────────────── */
+@keyframes float-a {
+  0%,100% { transform: translate(0, 0) rotate(0deg); }
+  25%     { transform: translate(14px, -22px) rotate(2deg); }
+  50%     { transform: translate(-8px, -38px) rotate(-1.5deg); }
+  75%     { transform: translate(8px, -16px) rotate(1deg); }
+}
+@keyframes float-b {
+  0%,100% { transform: translate(0, 0); }
+  33%     { transform: translate(-18px, -24px); }
+  66%     { transform: translate(12px, -42px); }
+}
+@keyframes float-c {
+  0%,100% { transform: translate(0, 0) scale(1); }
+  50%     { transform: translate(22px, -18px) scale(1.07); }
+}
+@keyframes header-pulse {
+  0%,100% { opacity: 0.26; }
+  50%     { opacity: 0.42; }
+}
+@keyframes sweep-light {
+  0%   { left: -80px; opacity: 0; }
+  15%  { opacity: 1; }
+  85%  { opacity: 1; }
+  100% { left: calc(100% + 80px); opacity: 0; }
+}
+@keyframes text-glow-pulse {
+  0%,100% { text-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 0 18px rgba(120,215,255,0.55); }
+  50%     { text-shadow: 0 1px 3px rgba(0,0,0,0.4), 0 0 36px rgba(100,220,255,1), 0 0 70px rgba(60,200,255,0.35); }
+}
+@keyframes eyebrow-fade {
+  0%,100% { opacity: 0.75; letter-spacing: 2.5px; }
+  50%     { opacity: 1;    letter-spacing: 3.5px; }
+}
+@keyframes dot-bounce {
+  0%,100% { transform: translateY(0); opacity: 0.6; }
+  50%     { transform: translateY(-5px); opacity: 1; }
+}
+@keyframes btn-neon {
+  0%,100% { box-shadow: 0 3px 8px rgba(0,100,190,0.4), 0 1px 0 rgba(255,255,255,0.3) inset; }
+  50%     { box-shadow: 0 0 18px rgba(0,180,255,0.7), 0 0 35px rgba(0,150,240,0.35), 0 1px 0 rgba(255,255,255,0.3) inset; }
+}
+@keyframes progress-glow {
+  0%,100% { box-shadow: 0 0 8px rgba(90,218,255,0.5); }
+  50%     { box-shadow: 0 0 20px rgba(90,218,255,0.9), 0 0 40px rgba(0,180,255,0.4); }
+}
+@keyframes container-breathe {
+  0%,100% { box-shadow: 0 8px 32px rgba(0,80,160,0.28), 0 2px 8px rgba(0,120,220,0.15), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(100,180,240,0.2); }
+  50%     { box-shadow: 0 12px 48px rgba(0,80,160,0.38), 0 4px 16px rgba(0,120,220,0.25), inset 0 1px 0 rgba(255,255,255,0.95), inset 0 -1px 0 rgba(100,180,240,0.3); }
+}
+
+/* ── FLOATING GLASS ORBS ────────────────────────────────── */
+.orb {
+  position: fixed;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+/* Large orb — top right */
+.orb-1 {
+  width: 210px; height: 210px;
+  top: 4%; right: 2%;
+  background: radial-gradient(circle at 32% 28%,
+    rgba(255, 255, 255, 0.88) 0%,
+    rgba(160, 225, 255, 0.56) 20%,
+    rgba(50,  165, 240, 0.30) 48%,
+    rgba(10,  85,  200, 0.12) 74%,
+    transparent 100%
+  );
+  box-shadow:
+    inset -6px -6px 18px rgba(0, 55, 170, 0.18),
+    inset  3px  3px  8px rgba(255,255,255,0.35),
+    0 8px 32px rgba(0, 120, 240, 0.12);
+  animation: float-a 13s ease-in-out infinite;
+}
+
+/* Teal orb — bottom left */
+.orb-2 {
+  width: 140px; height: 140px;
+  bottom: 10%; left: 1%;
+  background: radial-gradient(circle at 36% 28%,
+    rgba(255, 255, 255, 0.78) 0%,
+    rgba(100, 235, 225, 0.48) 22%,
+    rgba(0,   185, 195, 0.22) 52%,
+    transparent 100%
+  );
+  box-shadow:
+    inset -4px -4px 12px rgba(0, 120, 130, 0.15),
+    inset  2px  2px  6px rgba(255,255,255,0.30),
+    0 5px 20px rgba(0, 185, 200, 0.10);
+  animation: float-b 10s ease-in-out infinite 1.2s;
+}
+
+/* Small orb — upper left */
+.orb-3 {
+  width: 88px; height: 88px;
+  top: 28%; left: 3%;
+  background: radial-gradient(circle at 34% 28%,
+    rgba(255, 255, 255, 0.92) 0%,
+    rgba(180, 238, 255, 0.62) 28%,
+    rgba(60,  172, 242, 0.26) 58%,
+    transparent 100%
+  );
+  box-shadow:
+    inset  2px  2px  5px rgba(255,255,255,0.4),
+    0 3px 14px rgba(0, 140, 240, 0.14);
+  animation: float-c 7.5s ease-in-out infinite 2.3s;
+}
+
+/* Tiny bright orb — mid right */
+.orb-4 {
+  width: 58px; height: 58px;
+  top: 52%; right: 6%;
+  background: radial-gradient(circle at 33% 26%,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(145, 228, 255, 0.68) 28%,
+    rgba(30,  155, 232, 0.22) 62%,
+    transparent 100%
+  );
+  box-shadow: inset 2px 2px 4px rgba(255,255,255,0.5);
+  animation: float-a 6.5s ease-in-out infinite 0.7s;
+}
+
+/* Medium orb — lower right */
+.orb-5 {
+  width: 165px; height: 165px;
+  bottom: 4%; right: 8%;
+  background: radial-gradient(circle at 34% 29%,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(125, 205, 255, 0.42) 26%,
+    rgba(20,  135, 222, 0.18) 56%,
+    transparent 100%
+  );
+  box-shadow:
+    inset -5px -5px 14px rgba(0, 75, 180, 0.16),
+    inset  3px  3px  7px rgba(255,255,255,0.28),
+    0 6px 26px rgba(0, 100, 220, 0.10);
+  animation: float-b 15s ease-in-out infinite 3.5s;
+}
+
+/* Large soft orb — left edge, partially off-screen */
+.orb-6 {
+  width: 280px; height: 280px;
+  top: 38%; left: -80px;
+  background: radial-gradient(circle at 40% 32%,
+    rgba(255, 255, 255, 0.52) 0%,
+    rgba(105, 218, 252, 0.28) 32%,
+    rgba(0,   162, 232, 0.10) 62%,
+    transparent 100%
+  );
+  animation: float-c 19s ease-in-out infinite 4.8s;
+}
+
+/* ── HEADER ENHANCEMENTS ────────────────────────────────── */
+
+/* Animated gloss pulse */
+header::before {
+  animation: header-pulse 5s ease-in-out infinite;
+}
+
+/* Animated light sweep */
+header .sweep {
+  position: absolute;
+  top: 0; bottom: 0;
+  width: 70px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.28), transparent);
+  filter: blur(6px);
+  animation: sweep-light 7s ease-in-out infinite 1.5s;
+  pointer-events: none;
+}
+
+/* Header eyebrow badge */
+.header-eyebrow {
+  font-size: 0.7em;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.82);
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+  display: inline-block;
+  padding: 4px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.10);
+  backdrop-filter: blur(6px);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  animation: eyebrow-fade 4s ease-in-out infinite;
+}
+
+/* Coloured "YT" prefix in title */
+.title-yt {
+  color: #5ae0ff;
+  text-shadow:
+    0 0 12px rgba(90, 224, 255, 0.85),
+    0 0 28px rgba(60, 200, 255, 0.45),
+    0 1px 3px rgba(0,0,0,0.4);
+}
+
+/* Animated title glow */
+header h1 {
+  animation: text-glow-pulse 4s ease-in-out infinite;
+}
+
+/* Decorative dots row */
+.header-dots {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+.header-dots span {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+  box-shadow: 0 0 6px rgba(120, 220, 255, 0.7);
+  display: inline-block;
+}
+.header-dots span:nth-child(1) { animation: dot-bounce 2.2s ease-in-out infinite 0.0s; }
+.header-dots span:nth-child(2) { animation: dot-bounce 2.2s ease-in-out infinite 0.2s; }
+.header-dots span:nth-child(3) { animation: dot-bounce 2.2s ease-in-out infinite 0.4s; }
+.header-dots span:nth-child(4) { animation: dot-bounce 2.2s ease-in-out infinite 0.6s; }
+.header-dots span:nth-child(5) { animation: dot-bounce 2.2s ease-in-out infinite 0.8s; }
+
+/* ── CONTAINER ANIMATION ────────────────────────────────── */
+.container {
+  animation: container-breathe 8s ease-in-out infinite;
+}
+
+/* ── BUTTON NEON GLOW ───────────────────────────────────── */
+.btn-primary:hover {
+  animation: btn-neon 1.5s ease-in-out infinite;
+  transform: translateY(-1px);
+}
+
+/* ── PROGRESS BAR ACTIVE GLOW ───────────────────────────── */
+.progress-fill:not([style*="width: 0"]) {
+  animation: progress-glow 1.8s ease-in-out infinite;
+}
+
+/* ── VIVID BACKGROUND ENHANCEMENT ──────────────────────── */
+/* Adds a subtle diagonal light band across the sky */
+body {
+  background:
+    linear-gradient(125deg, rgba(255,255,255,0.06) 0%, transparent 40%, rgba(255,255,255,0.04) 70%, transparent 100%),
+    radial-gradient(ellipse at 20% 10%, rgba(180, 230, 255, 0.6) 0%, transparent 50%),
+    radial-gradient(ellipse at 80% 90%, rgba(100, 200, 240, 0.5) 0%, transparent 50%),
+    linear-gradient(180deg,
+      #072e55 0%,
+      #0b538e 16%,
+      #1680c4 35%,
+      #2aaee0 52%,
+      #60ccf0 68%,
+      #a8e5fb 83%,
+      #daf4ff 100%
+    );
+}
+
+/* ── INPUT / SELECT FOCUS GLOW ──────────────────────────── */
+.url-input:focus,
+.form-group select:focus,
+.path-input:focus {
+  border-color: rgba(0, 190, 255, 0.9);
+  box-shadow:
+    0 0 0 3px rgba(0, 190, 255, 0.22),
+    0 0 12px rgba(0, 200, 255, 0.18),
+    inset 0 1px 3px rgba(0, 80, 160, 0.12);
+}
+
+/* ── HISTORY ITEM HOVER GLOW ────────────────────────────── */
+.history-item:hover {
+  border-left-color: rgba(0, 200, 255, 0.9);
+  box-shadow:
+    0 4px 14px rgba(0, 120, 220, 0.22),
+    0 0 10px rgba(0, 180, 255, 0.12),
+    inset 0 1px 0 rgba(255,255,255,0.9);
+  transform: translateX(2px);
+  transition: all 0.25s ease;
+}
