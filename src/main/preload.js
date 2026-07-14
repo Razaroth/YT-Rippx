@@ -6,4 +6,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
   getHistory: () => ipcRenderer.invoke('get-history'),
   clearHistory: () => ipcRenderer.invoke('clear-history'),
   selectDirectory: () => ipcRenderer.invoke('select-directory'),
+  onDownloadProgress: (callback) => {
+    ipcRenderer.removeAllListeners('download-progress');
+    ipcRenderer.on('download-progress', (_e, percent) => callback(percent));
+  },
+  removeDownloadProgressListeners: () => ipcRenderer.removeAllListeners('download-progress'),
 });

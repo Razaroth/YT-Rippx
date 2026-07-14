@@ -154,7 +154,7 @@ function extractErrors(stderr) {
 }
 
 // Download YouTube video/audio
-async function downloadYouTube(url, format, quality, outputPath) {
+async function downloadYouTube(url, format, quality, outputPath, onProgress) {
   return new Promise(async (resolve, reject) => {
     let ytDlp;
     try { ytDlp = await resolveYtDlp(); } catch (e) { return reject(e); }
@@ -199,7 +199,7 @@ async function downloadYouTube(url, format, quality, outputPath) {
 
     const command = `${ytDlp} ${argParts.join(' ')}`;
 
-    const process = exec(command, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
+    const child = exec(command, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
         reject(new Error(`Download failed: ${extractErrors(stderr) || error.message}`));
       } else {
@@ -211,10 +211,14 @@ async function downloadYouTube(url, format, quality, outputPath) {
       }
     });
 
-    // Optional: stream progress if needed
-    process.stderr?.on('data', (data) => {
+    // Stream yt-dlp progress: parses "[download]  45.2%" lines from stderr
+    child.stderr?.on('data', (data) => {
+      if (!onProgress) return;
       const str = data.toString();
-      // Could emit progress updates here
+      const match = str.match(/(\d+\.?\d*)%/);
+      if (match) {
+        onProgress(parseFloat(match[1]));
+      }
     });
   });
 }

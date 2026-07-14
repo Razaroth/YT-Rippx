@@ -489,6 +489,21 @@ main {
   border-radius: 10px 10px 0 0;
 }
 
+/* Animated indeterminate shimmer while waiting for first yt-dlp progress tick */
+@keyframes shimmer {
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+}
+
+.progress-fill--waiting {
+  width: 100% !important;
+  background: linear-gradient(90deg,
+    #1a9dd6 0%, #5adaff 25%, #1a9dd6 50%, #5adaff 75%, #1a9dd6 100%
+  );
+  background-size: 200% auto;
+  animation: shimmer 1.5s linear infinite;
+}
+
 #progressText {
   margin-top: 6px;
   font-size: 0.88em;

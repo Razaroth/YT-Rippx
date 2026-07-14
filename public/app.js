@@ -40,8 +40,9 @@ fetchBtn.addEventListener('click', async () => {
   fetchBtn.disabled = true;
 
   try {
-    const result = await window.electronAPI.getFormats(url);
-    
+    const res = await window.electronAPI.getFormats(url);
+    if (!res.success) throw new Error(res.error || 'Failed to fetch video info');
+    const result = res.data;
     document.getElementById('videoTitle').textContent = result.title || 'Unknown';
     
     const views = result.viewCount ? formatViews(result.viewCount) : '0';
@@ -95,7 +96,17 @@ downloadBtn.addEventListener('click', async () => {
 
   downloadBtn.disabled = true;
   progressContainer.classList.remove('hidden');
+  progressFill.style.width = '0%';
+  progressFill.classList.add('progress-fill--waiting');
+  progressText.textContent = 'Starting download...';
   statusMessage.classList.add('hidden');
+
+  // Listen for real-time progress from yt-dlp
+  window.electronAPI.onDownloadProgress((percent) => {
+    progressFill.classList.remove('progress-fill--waiting');
+    progressFill.style.width = `${percent}%`;
+    progressText.textContent = `${Math.round(percent)}%`;
+  });
 
   try {
     const result = await window.electronAPI.download({
@@ -106,6 +117,8 @@ downloadBtn.addEventListener('click', async () => {
     });
 
     if (result.success) {
+      window.electronAPI.removeDownloadProgressListeners();
+      progressFill.classList.remove('progress-fill--waiting');
       progressFill.style.width = '100%';
       progressText.textContent = '100%';
       showStatus('Download complete!', 'success');
@@ -117,14 +130,17 @@ downloadBtn.addEventListener('click', async () => {
         videoInfo.classList.add('hidden');
         optionsPanel.classList.add('hidden');
         progressContainer.classList.add('hidden');
+        progressFill.classList.remove('progress-fill--waiting');
         progressFill.style.width = '0%';
         downloadBtn.disabled = false;
       }, 2000);
     } else {
+      window.electronAPI.removeDownloadProgressListeners();
       showStatus(`Error: ${result.error}`, 'error');
       downloadBtn.disabled = false;
     }
   } catch (error) {
+    window.electronAPI.removeDownloadProgressListeners();
     showStatus(`Download failed: ${error.message}`, 'error');
     downloadBtn.disabled = false;
   }
