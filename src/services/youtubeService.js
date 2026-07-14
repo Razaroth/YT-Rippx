@@ -97,33 +97,99 @@ async function resolveYtDlp() {
   );
 }
 
+// Resolve ffmpeg executable path (needed for MP3 conversion and format merging)
+let _ffmpegPath = null;
+async function resolveFFmpeg() {
+  if (_ffmpegPath !== null) return _ffmpegPath; // null = not found (cached)
+
+  // 1. System PATH
+  try {
+    const cmd = process.platform === 'win32' ? 'where ffmpeg' : 'which ffmpeg';
+    const { stdout } = await execPromise(cmd);
+    const found = stdout.trim().split(/\r?\n/)[0];
+    if (found && fs.existsSync(found)) {
+      _ffmpegPath = found;
+      return _ffmpegPath;
+    }
+  } catch (_) {}
+
+  if (process.platform === 'win32') {
+    const userProfile = process.env.USERPROFILE || os.homedir();
+    const localAppData = process.env.LOCALAPPDATA || '';
+    const candidates = [
+      path.join(userProfile, 'scoop', 'shims', 'ffmpeg.exe'),
+      path.join(userProfile, 'scoop', 'apps', 'ffmpeg', 'current', 'bin', 'ffmpeg.exe'),
+      'C:\\ProgramData\\chocolatey\\bin\\ffmpeg.exe',
+      'C:\\ffmpeg\\bin\\ffmpeg.exe',
+      'C:\\ffmpeg\\ffmpeg.exe',
+      path.join(userProfile, 'ffmpeg', 'bin', 'ffmpeg.exe'),
+      path.join(localAppData, 'Programs', 'ffmpeg', 'bin', 'ffmpeg.exe'),
+      path.join(userProfile, 'bin', 'ffmpeg.exe'),
+    ];
+    for (const c of candidates) {
+      if (fs.existsSync(c)) { _ffmpegPath = c; return _ffmpegPath; }
+    }
+  } else {
+    const unixCandidates = [
+      '/usr/local/bin/ffmpeg', '/usr/bin/ffmpeg',
+      path.join(os.homedir(), '.local', 'bin', 'ffmpeg'),
+    ];
+    for (const c of unixCandidates) {
+      if (fs.existsSync(c)) { _ffmpegPath = c; return _ffmpegPath; }
+    }
+  }
+
+  _ffmpegPath = ''; // cache miss — not found
+  return _ffmpegPath;
+}
+
+// Extra yt-dlp args to avoid JS runtime requirement (use mobile/web player clients)
+const PLAYER_CLIENT_ARGS = ['--extractor-args', 'youtube:player_client=ios,mweb'];
+
 // Download YouTube video/audio
 async function downloadYouTube(url, format, quality, outputPath) {
   return new Promise(async (resolve, reject) => {
     let ytDlp;
     try { ytDlp = await resolveYtDlp(); } catch (e) { return reject(e); }
 
+    const ffmpegPath = await resolveFFmpeg();
+
     const defaultPath = outputPath || path.join(process.env.USERPROFILE || process.env.HOME, 'Downloads', 'YTRippx');
-    
+
     // Ensure output directory exists
     if (!fs.existsSync(defaultPath)) {
       fs.mkdirSync(defaultPath, { recursive: true });
     }
 
+    if (format === 'mp3' && !ffmpegPath) {
+      return reject(new Error(
+        'ffmpeg is required for MP3 conversion but was not found.\n' +
+        'Install it and try again:\n' +
+        '  Windows: winget install ffmpeg  or  scoop install ffmpeg  or  choco install ffmpeg\n' +
+        '  macOS: brew install ffmpeg\n' +
+        '  Linux: sudo apt install ffmpeg'
+      ));
+    }
+
     const outputTemplate = `${defaultPath.replace(/\\/g, '/')}/%(title)s.%(ext)s`;
-    const audioFormat = format === 'mp3' ? 'bestaudio/best' : 'best';
+
+    // For MP4 without ffmpeg, restrict to pre-muxed formats to avoid needing merging
+    const videoFormat = ffmpegPath ? 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' : 'best[ext=mp4]/best';
+    const audioFormat = 'bestaudio/best';
+
+    const ffmpegArgs = ffmpegPath ? ['--ffmpeg-location', `"${ffmpegPath}"`] : [];
     const postprocessArgs = format === 'mp3' ? ['-x', '--audio-format', 'mp3'] : [];
 
-    const args = [
+    const argParts = [
       `"${url}"`,
-      '-f',
-      audioFormat,
-      '-o',
-      `"${outputTemplate}"`,
+      '-f', format === 'mp3' ? audioFormat : videoFormat,
+      '-o', `"${outputTemplate}"`,
+      ...PLAYER_CLIENT_ARGS,
+      ...ffmpegArgs,
       ...postprocessArgs,
-    ].join(' ');
+    ];
 
-    const command = `${ytDlp} ${args}`;
+    const command = `${ytDlp} ${argParts.join(' ')}`;
 
     const process = exec(command, { maxBuffer: 10 * 1024 * 1024 }, (error, stdout, stderr) => {
       if (error) {
@@ -149,7 +215,8 @@ async function downloadYouTube(url, format, quality, outputPath) {
 async function getVideoInfo(url) {
   try {
     const ytDlp = await resolveYtDlp();
-    const command = `${ytDlp} "${url}" --dump-json --quiet --skip-download`;
+    const extraArgs = [...PLAYER_CLIENT_ARGS].join(' ');
+    const command = `${ytDlp} "${url}" --dump-json --quiet --skip-download ${extraArgs}`;
     const { stdout, stderr } = await execPromise(command, { 
       maxBuffer: 10 * 1024 * 1024,
       timeout: 30000 
