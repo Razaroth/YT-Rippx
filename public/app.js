@@ -239,3 +239,8 @@ function formatViews(viewCount) {
 
 // Initialize on load
 init();
+
+// ── Custom frameless titlebar controls ──────────────────────
+document.getElementById('tbMinimize').addEventListener('click', () => window.electronAPI.windowControls.minimize());
+document.getElementById('tbMaximize').addEventListener('click', () => window.electronAPI.windowControls.maximize());
+document.getElementById('tbClose').addEventListener('click',    () => window.electronAPI.windowControls.close());

@@ -8,20 +8,9 @@
 
 body {
   font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Tahoma, Arial, sans-serif;
-  background:
-    radial-gradient(ellipse at 20% 10%, rgba(180, 230, 255, 0.6) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 90%, rgba(100, 200, 240, 0.5) 0%, transparent 50%),
-    linear-gradient(180deg,
-      #0a3d6b 0%,
-      #0e5fa0 18%,
-      #1a8fd1 38%,
-      #38b6e8 55%,
-      #72d4f5 72%,
-      #b8eafc 88%,
-      #e0f6ff 100%
-    );
+  background: transparent;
   min-height: 100vh;
-  padding: 24px 20px;
+  padding: 48px 20px 20px; /* 48px top for custom titlebar */
   position: relative;
   overflow-x: hidden;
 }
@@ -879,6 +868,20 @@ header h1 {
 /* ── CONTAINER ANIMATION ────────────────────────────────── */
 .container {
   animation: container-breathe 8s ease-in-out infinite;
+  /* Deep frosted glass — blurs the desktop behind it */
+  background: linear-gradient(155deg,
+    rgba(8, 52, 140, 0.62) 0%,
+    rgba(5, 40, 112, 0.58) 50%,
+    rgba(3, 32, 95,  0.55) 100%
+  ) !important;
+  backdrop-filter: blur(52px) saturate(190%) brightness(1.14) !important;
+  -webkit-backdrop-filter: blur(52px) saturate(190%) brightness(1.14) !important;
+  border: 1px solid rgba(255, 255, 255, 0.36) !important;
+  box-shadow:
+    0 28px 72px rgba(0, 15, 70, 0.70),
+    0 6px 22px rgba(0, 90, 210, 0.38),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -1px 0 rgba(120, 190, 255, 0.30) !important;
 }
 
 /* ── BUTTON NEON GLOW ───────────────────────────────────── */
@@ -893,21 +896,9 @@ header h1 {
 }
 
 /* ── VIVID BACKGROUND ENHANCEMENT ──────────────────────── */
-/* Adds a subtle diagonal light band across the sky */
+/* Window is transparent — desktop shows through. Keep body transparent. */
 body {
-  background:
-    linear-gradient(125deg, rgba(255,255,255,0.06) 0%, transparent 40%, rgba(255,255,255,0.04) 70%, transparent 100%),
-    radial-gradient(ellipse at 20% 10%, rgba(180, 230, 255, 0.6) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 90%, rgba(100, 200, 240, 0.5) 0%, transparent 50%),
-    linear-gradient(180deg,
-      #072e55 0%,
-      #0b538e 16%,
-      #1680c4 35%,
-      #2aaee0 52%,
-      #60ccf0 68%,
-      #a8e5fb 83%,
-      #daf4ff 100%
-    );
+  background: transparent;
 }
 
 /* ── INPUT / SELECT FOCUS GLOW ──────────────────────────── */
@@ -931,3 +922,67 @@ body {
   transform: translateX(2px);
   transition: all 0.25s ease;
 }
+
+/* ── CUSTOM FRAMELESS GLASS TITLEBAR ────────────────────── */
+.app-titlebar {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  height: 38px;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px 0 14px;
+  background: linear-gradient(180deg,
+    rgba(6, 42, 120, 0.82) 0%,
+    rgba(4, 32, 100, 0.78) 100%
+  );
+  backdrop-filter: blur(30px) saturate(160%);
+  -webkit-backdrop-filter: blur(30px) saturate(160%);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.18);
+  -webkit-app-region: drag;
+  user-select: none;
+}
+
+.app-titlebar-drag {
+  flex: 0 0 60px; /* space on the left */
+}
+
+.app-titlebar-title {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 700;
+  color: rgba(255, 255, 255, 0.88);
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(90, 210, 255, 0.5), 0 1px 2px rgba(0,0,0,0.4);
+  pointer-events: none;
+}
+
+.app-titlebar-controls {
+  display: flex;
+  gap: 5px;
+  -webkit-app-region: no-drag;
+}
+
+.tb-btn {
+  width: 30px; height: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 13px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.10);
+  color: rgba(255, 255, 255, 0.85);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  padding: 0;
+}
+
+.tb-btn:hover          { background: rgba(255, 255, 255, 0.22); border-color: rgba(255,255,255,0.28); }
+.tb-minimize:hover     { background: rgba(255, 190, 0, 0.55);   border-color: rgba(255, 220, 50, 0.5); color: #3a2000; }
+.tb-maximize:hover     { background: rgba(40, 180, 80, 0.55);   border-color: rgba(80, 220, 100, 0.5); }
+.tb-close:hover        { background: rgba(210, 40, 40, 0.75);   border-color: rgba(255, 100, 100, 0.5); }

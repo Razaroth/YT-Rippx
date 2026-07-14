@@ -8,8 +8,14 @@ let mainWindow;
 
 const createWindow = () => {
   mainWindow = new BrowserWindow({
-    width: 1200,
-    height: 800,
+    width: 1000,
+    height: 780,
+    frame: false,
+    transparent: true,
+    backgroundColor: '#00000000',
+    resizable: true,
+    minWidth: 700,
+    minHeight: 540,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true,
@@ -17,6 +23,11 @@ const createWindow = () => {
       sandbox: true,
     },
   });
+
+  // Windows 11 Acrylic material (gracefully degrades on older Windows)
+  if (process.platform === 'win32') {
+    try { mainWindow.setBackgroundMaterial('acrylic'); } catch (_) {}
+  }
 
   mainWindow.loadFile(path.join(__dirname, '../../public/index.html'));
 
@@ -92,6 +103,14 @@ ipcMain.handle('select-directory', async () => {
   });
   return result.filePaths[0] || null;
 });
+
+// Window control handlers (used by custom frameless titlebar)
+ipcMain.handle('window-minimize', () => { if (mainWindow) mainWindow.minimize(); });
+ipcMain.handle('window-maximize', () => {
+  if (!mainWindow) return;
+  mainWindow.isMaximized() ? mainWindow.restore() : mainWindow.maximize();
+});
+ipcMain.handle('window-close', () => { if (mainWindow) mainWindow.close(); });
 
 // Menu
 const template = [

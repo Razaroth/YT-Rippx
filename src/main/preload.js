@@ -11,4 +11,9 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('download-progress', (_e, percent) => callback(percent));
   },
   removeDownloadProgressListeners: () => ipcRenderer.removeAllListeners('download-progress'),
+  windowControls: {
+    minimize: () => ipcRenderer.invoke('window-minimize'),
+    maximize: () => ipcRenderer.invoke('window-maximize'),
+    close:    () => ipcRenderer.invoke('window-close'),
+  },
 });
