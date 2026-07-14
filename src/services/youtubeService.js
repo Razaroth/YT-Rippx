@@ -143,9 +143,6 @@ async function resolveFFmpeg() {
   return _ffmpegPath;
 }
 
-// tv_embedded client works without PO tokens and without a JS runtime
-const PLAYER_CLIENT_ARGS = ['--extractor-args', 'youtube:player_client=tv_embedded,web_embedded'];
-
 // Extract only ERROR lines from yt-dlp stderr (ignore WARNING / INFO noise)
 function extractErrors(stderr) {
   if (!stderr) return '';
@@ -153,7 +150,7 @@ function extractErrors(stderr) {
     .split(/\r?\n/)
     .filter(l => /^\s*ERROR:/i.test(l))
     .join('\n');
-  return errorLines || stderr.trim(); // fallback to full stderr if no ERROR lines found
+  return errorLines || stderr.trim();
 }
 
 // Download YouTube video/audio
@@ -183,9 +180,10 @@ async function downloadYouTube(url, format, quality, outputPath) {
 
     const outputTemplate = `${defaultPath.replace(/\\/g, '/')}/%(title)s.%(ext)s`;
 
-    // For MP4 without ffmpeg, restrict to pre-muxed formats to avoid needing merging
-    const videoFormat = ffmpegPath ? 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best' : 'best[ext=mp4]/best';
-    const audioFormat = 'bestaudio/best';
+    // Simple, maximally-compatible format strings.
+    // "best" always resolves to something; prefer mp4 but don't fail if unavailable.
+    const videoFormat = 'bestvideo[ext=mp4]+bestaudio[ext=m4a]/best[ext=mp4]/best';
+    const audioFormat = 'bestaudio[ext=m4a]/bestaudio/best';
 
     const ffmpegArgs = ffmpegPath ? ['--ffmpeg-location', `"${ffmpegPath}"`] : [];
     const postprocessArgs = format === 'mp3' ? ['-x', '--audio-format', 'mp3'] : [];
@@ -193,8 +191,8 @@ async function downloadYouTube(url, format, quality, outputPath) {
     const argParts = [
       `"${url}"`,
       '-f', format === 'mp3' ? audioFormat : videoFormat,
+      '--no-warnings',
       '-o', `"${outputTemplate}"`,
-      ...PLAYER_CLIENT_ARGS,
       ...ffmpegArgs,
       ...postprocessArgs,
     ];
@@ -225,8 +223,7 @@ async function downloadYouTube(url, format, quality, outputPath) {
 async function getVideoInfo(url) {
   try {
     const ytDlp = await resolveYtDlp();
-    const extraArgs = [...PLAYER_CLIENT_ARGS].join(' ');
-    const command = `${ytDlp} "${url}" --dump-json --quiet --no-warnings --skip-download ${extraArgs}`;
+    const command = `${ytDlp} "${url}" --dump-json --quiet --no-warnings --skip-download`;
     const { stdout, stderr } = await execPromise(command, { 
       maxBuffer: 10 * 1024 * 1024,
       timeout: 30000 
